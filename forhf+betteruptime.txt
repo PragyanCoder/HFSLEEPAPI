@@ -1,0 +1,55 @@
+from fastapi import FastAPI
+import requests
+import os
+
+# Initialize FastAPI app
+app = FastAPI()
+
+# Environment variables
+space_url = "https://PragyanPandey-PragyanSangeet.hf.space"  # Replace with your space URL
+api_token = os.getenv("API_TOKEN")  # Read API token from environment variable
+
+# Headers for authorization
+headers = {
+    "Authorization": f"Bearer {api_token}"
+}
+
+# Function to check space status
+def check_space_status():
+    try:
+        response = requests.get(space_url, headers=headers)
+        if response.status_code == 200:
+            return "Space Running"
+        elif response.status_code == 503:
+            return "Space Sleeping"
+        else:
+            return f"Error: Status {response.status_code}"
+    except Exception as e:
+        return f"Error Accessing Space: {e}"
+
+# Function to start the space
+def start_space():
+    try:
+        response = requests.post(f"{space_url}/api/space/start", headers=headers)
+        if response.status_code == 200:
+            return "Space Restarting"
+        else:
+            return f"Failed to Restart Space: Status {response.status_code}"
+    except Exception as e:
+        return f"Error Starting Space: {e}"
+
+@app.get("/dev")
+def dev():
+    space_status = check_space_status()
+    if space_status == "Space Sleeping":
+        restart_status = start_space()
+        return {
+            "message": "Welcome to the dev endpoint!",
+            "username": "@pragyan",
+            "space_status": restart_status
+        }
+    return {
+        "message": "Welcome to the dev endpoint!",
+        "username": "@pragyan",
+        "space_status": space_status
+    }
