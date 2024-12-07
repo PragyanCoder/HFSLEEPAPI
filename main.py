@@ -8,7 +8,7 @@ import os
 app = FastAPI()
 
 # Environment variables
-space_url = "https://PragyanPandey-PragyanEval.hf.space"  # Replace with your space URL
+space_url = "https://PragyanPandey-PragyanUB.hf.space"  # Replace with your space URL
 api_token = os.getenv("API_TOKEN")  # Read API token from environment variable
 
 # Headers for authorization
