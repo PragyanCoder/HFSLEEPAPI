@@ -66,7 +66,7 @@ def monitor_spaces():
                 space_statuses[space_url] = "Error Accessing Space"
                 print(f"Error accessing {space_url}: {e}")
 
-        time.sleep(6 * 60 * 60)  # Run every 6 hours
+        time.sleep(60)  # Check every minute
 
 # Start the background thread
 thread = threading.Thread(target=monitor_spaces, daemon=True)
@@ -74,14 +74,11 @@ thread.start()
 
 @app.get("/dev")
 def dev():
-    status_summary = [
-        {"name": space["name"], "status": space_statuses[space["url"]]} for space in spaces
-    ]
-    boxes = "\n".join([
-        f"Box {i+1}:\nName: {summary['name']}\nStatus: {summary['status']}\n" for i, summary in enumerate(status_summary)
-    ])
+    # Prepare status summary with line breaks (without escape characters)
+    status_summary = "\n".join([f"{space['name']} - Status: {space_statuses[space['url']]}" for space in spaces])
+    
     return {
         "message": "Welcome to the dev endpoint!",
         "username": "@pragyan",
-        "boxes": boxes
+        "status_summary": status_summary
     }
