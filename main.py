@@ -15,6 +15,10 @@ headers = {
     "Authorization": f"Bearer {api_token}"
 }
 
+# Telegram bot details
+telegram_token = "7067388804:AAHo1L6H7V7Y20CTsJDzfsCzahzuarlUDSQ"
+telegram_chat_id = "5205300039"
+
 # List of Space URLs to monitor with names
 spaces = [
     {"name": "GitHub Music", "url": "https://pragyanpandey-githubmusic.hf.space"},
@@ -66,7 +70,33 @@ def monitor_spaces():
                 space_statuses[space_url] = "Error Accessing Space"
                 print(f"Error accessing {space_url}: {e}")
 
+        # Send status update to Telegram every minute
+        send_telegram_update()
+        
         time.sleep(60)  # Check every minute
+
+# Function to send space status updates to Telegram
+def send_telegram_update():
+    status_summary = "\n".join([f"{space['name']} - Status: {space_statuses[space['url']]}" for space in spaces])
+    message = f"Space Status Update:\n\n{status_summary}"
+
+    try:
+        # Send message to Telegram using bot
+        url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+        payload = {
+            "chat_id": telegram_chat_id,
+            "text": message,
+            "parse_mode": "Markdown"  # Optional: This allows for rich formatting
+        }
+        response = requests.post(url, data=payload)
+
+        # Check if the message was successfully sent
+        if response.status_code == 200:
+            print("Status update sent to Telegram.")
+        else:
+            print(f"Failed to send message. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending message to Telegram: {e}")
 
 # Start the background thread
 thread = threading.Thread(target=monitor_spaces, daemon=True)
