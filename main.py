@@ -3,7 +3,6 @@ import requests
 import threading
 import time
 import os
-from datetime import datetime, timedelta
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -16,6 +15,10 @@ headers = {
     "Authorization": f"Bearer {api_token}"
 }
 
+# Telegram bot details
+telegram_token = "7067388804:AAHo1L6H7V7Y20CTsJDzfsCzahzuarlUDSQ"
+telegram_chat_id = "5205300039"
+
 # List of Space URLs to monitor with names
 spaces = [
     {"name": "GitHub Music", "url": "https://pragyanpandey-githubmusic.hf.space"},
@@ -26,43 +29,29 @@ spaces = [
 # Dictionary to store space statuses
 space_statuses = {space["url"]: "Unknown" for space in spaces}
 
-# Track last update time
-last_update_time = datetime.now()
-
-# Placeholder for sending messages (e.g., via Telegram or other platforms)
-def send_message_to_githubleech(message):
-    print(f"Sending message to @githubleech: {message}")
-    # Implement the actual message sending (e.g., through a Telegram bot or other API)
-    # Example using requests:
-    # requests.post(telegram_url, data={"chat_id": "your_chat_id", "text": message})
-
 # Function to start a space
 def start_space(space_url):
     try:
         response = requests.post(f"{space_url}/api/space/start", headers=headers)
         if response.status_code == 200:
             space_statuses[space_url] = "Space Restarting"
-            send_message_to_githubleech(f"Space {space_url} is restarting.")
             print(f"Space {space_url} is restarting...")
         else:
             space_statuses[space_url] = f"Failed to Restart: Status {response.status_code}"
-            send_message_to_githubleech(f"Error restarting {space_url}. Status code: {response.status_code}")
             print(f"Error restarting {space_url}. Status code: {response.status_code}")
     except Exception as e:
         space_statuses[space_url] = "Error Starting Space"
-        send_message_to_githubleech(f"Error starting {space_url}: {e}")
         print(f"Error starting {space_url}: {e}")
 
 # Background task for pinging and managing spaces
 def monitor_spaces():
-    global last_update_time
     while True:
         for space in spaces:
             space_url = space["url"]
             try:
                 if not api_token:
                     space_statuses[space_url] = "API Token Missing"
-                    send_message_to_githubleech("API token not found. Please set the API_TOKEN environment variable.")
+                    print("API token not found. Please set the API_TOKEN environment variable.")
                     break
 
                 # Ping the space
@@ -72,31 +61,42 @@ def monitor_spaces():
                     print(f"Space {space_url} is running.")
                 elif response.status_code == 503:
                     space_statuses[space_url] = "Space Sleeping"
-                    send_message_to_githubleech(f"Space {space_url} is sleeping. Attempting to restart...")
                     print(f"Space {space_url} is sleeping. Attempting to restart...")
                     start_space(space_url)
                 else:
                     space_statuses[space_url] = f"Error: Status {response.status_code}"
-                    send_message_to_githubleech(f"Space {space_url} responded with status code: {response.status_code}")
                     print(f"Space {space_url} responded with status code: {response.status_code}")
             except Exception as e:
                 space_statuses[space_url] = "Error Accessing Space"
-                send_message_to_githubleech(f"Error accessing {space_url}: {e}")
                 print(f"Error accessing {space_url}: {e}")
 
-        # Check every minute
-        time.sleep(60)
+        # Send status update to Telegram every 3 hours
+        send_telegram_update()
 
-        # Check if 3 hours have passed to send a status update
-        if datetime.now() - last_update_time >= timedelta(hours=3):
-            send_status_update()
-            last_update_time = datetime.now()
+        time.sleep(10800)  # Check every 3 hours (10800 seconds)
 
-# Function to send a status update
-def send_status_update():
+# Function to send space status updates to Telegram
+def send_telegram_update():
     status_summary = "\n".join([f"{space['name']} - Status: {space_statuses[space['url']]}" for space in spaces])
-    send_message_to_githubleech(f"Status Update:\n{status_summary}")
-    print(f"Sending status update:\n{status_summary}")
+    message = f"Space Status Update:\n\n{status_summary}"
+
+    try:
+        # Send message to Telegram using bot
+        url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+        payload = {
+            "chat_id": telegram_chat_id,
+            "text": message,
+            "parse_mode": "Markdown"  # Optional: This allows for rich formatting
+        }
+        response = requests.post(url, data=payload)
+
+        # Check if the message was successfully sent
+        if response.status_code == 200:
+            print("Status update sent to Telegram.")
+        else:
+            print(f"Failed to send message. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error sending message to Telegram: {e}")
 
 # Start the background thread
 thread = threading.Thread(target=monitor_spaces, daemon=True)
