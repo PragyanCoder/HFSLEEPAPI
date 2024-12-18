@@ -10,7 +10,10 @@ app = FastAPI()
 # Environment variables
 api_token = os.getenv("API_TOKEN")  # Read API token from environment variable
 
-# Headers for authorization
+# Headers for authorization (ensure api_token is set)
+if api_token is None:
+    raise ValueError("API_TOKEN environment variable is not set!")
+
 headers = {
     "Authorization": f"Bearer {api_token}"
 }
@@ -23,8 +26,8 @@ telegram_chat_id = "5205300039"
 spaces = [
     {"name": "GitHub Music", "url": "https://pragyanpandey-githubmusic.hf.space"},
     {"name": "Pragyan Sangeet", "url": "https://pragyanpandey-pragyansangeet.hf.space"},
-    {"name": "Ultroid", "url": "https://pragyanpandey-ultroid.hf.space"}
-    {"name": "PragyanStory", "url": "https://pragyanpandey-pragyanstory.hf.space"}
+    {"name": "Ultroid", "url": "https://pragyanpandey-ultroid.hf.space"},  # Added missing comma here
+    {"name": "PragyanStory", "url": "https://pragyanpandey-pragyanstory.hf.space"}  # Added missing comma here
 ]
 
 # Dictionary to store space statuses
@@ -50,11 +53,6 @@ def monitor_spaces():
         for space in spaces:
             space_url = space["url"]
             try:
-                if not api_token:
-                    space_statuses[space_url] = "API Token Missing"
-                    print("API token not found. Please set the API_TOKEN environment variable.")
-                    break
-
                 # Ping the space
                 response = requests.get(space_url, headers=headers)
                 if response.status_code == 200:
