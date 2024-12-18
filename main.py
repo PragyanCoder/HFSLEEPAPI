@@ -24,6 +24,7 @@ spaces = [
     {"name": "GitHub Music", "url": "https://pragyanpandey-githubmusic.hf.space"},
     {"name": "Pragyan Sangeet", "url": "https://pragyanpandey-pragyansangeet.hf.space"},
     {"name": "Ultroid", "url": "https://pragyanpandey-ultroid.hf.space"}
+    {"name": "PragyanStory", "url": "https://pragyanpandey-pragyanstory.hf.space"}
 ]
 
 # Dictionary to store space statuses
