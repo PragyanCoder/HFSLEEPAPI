@@ -23,12 +23,15 @@ telegram_token = "7067388804:AAHo1L6H7V7Y20CTsJDzfsCzahzuarlUDSQ"
 telegram_chat_id = "5205300039"
 
 # List of Space URLs to monitor with names
+# List of Space URLs to monitor with names
 spaces = [
     {"name": "GitHub Music", "url": "https://pragyanpandey-githubmusic.hf.space"},
     {"name": "Pragyan Sangeet", "url": "https://pragyanpandey-pragyansangeet.hf.space"},
-    {"name": "Ultroid", "url": "https://pragyanpandey-ultroid.hf.space"},  # Added missing comma here
-    {"name": "PragyanStory", "url": "https://pragyanpandey-pragyanstory.hf.space"}  # Added missing comma here
+    {"name": "Ultroid", "url": "https://pragyanpandey-ultroid.hf.space"},
+    {"name": "PragyanStory", "url": "https://pragyanpandey-pragyanstory.hf.space"},
+    {"name": "Beautiful Eval", "url": "https://pragyanpandey-beautifuleval.hf.space"}
 ]
+
 
 # Dictionary to store space statuses
 space_statuses = {space["url"]: "Unknown" for space in spaces}
